@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# local-only files, not part of the published project
+nexstar_control.py

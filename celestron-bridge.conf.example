@@ -1,0 +1,21 @@
+# Configuration for celestron-skyportal-bridge.
+# Copy to /etc/celestron-bridge.conf (the installer does it for you).
+# Format: KEY=value, lines starting with # are comments.
+# The CELESTRON_CONF environment variable overrides the file location.
+
+# Serial port of the NexStar hand controller.
+# "auto" picks the first adapter in /dev/serial/by-id/, or set an
+# explicit path, e.g. /dev/serial/by-id/usb-Prolific_Technology_Inc...
+SERIAL_PORT=auto
+SERIAL_BAUD=9600
+
+# INDI server (used by celestron_indi.py and to free the serial port
+# when SkyPortal connects).
+INDI_HOST=localhost
+INDI_PORT=7624
+INDI_DEVICE=Celestron GPS
+
+# Bridge logging: DEBUG, INFO, WARNING, ERROR.
+# Leave LOG_FILE empty to log to stderr (journald when run as a service).
+LOG_LEVEL=INFO
+LOG_FILE=
