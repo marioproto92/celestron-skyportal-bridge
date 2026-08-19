@@ -20,6 +20,10 @@ NexStar mount whose hand controller supports the `P` passthrough command.
   `1.2.3.4:2000`.
 - **INDI server** (`indi_celestron_gps`) for desktop planetarium software
   and remote scripting.
+- **Camera add-on** (optional, `camera-setup.sh`): a Pi CSI camera on the
+  telescope becomes an INDI CCD — FITS capture from Ekos/KStars — plus a
+  low-latency WebRTC live view in the browser with planetary and deep-sky
+  profiles.
 - **Python client/CLI** (`celestron_indi.py`): status, GoTo, sync, manual
   slewing — usable as a library or from the command line, locally or from
   a remote PC.
@@ -64,6 +68,9 @@ the next use).
   (mini-USB on recent controllers, or a serial/USB adapter on older ones)
 - Raspberry Pi with WiFi (tested: Raspberry Pi OS Bookworm) — the onboard
   WiFi is used as the hotspot
+- *(optional)* a Raspberry Pi CSI camera module for imaging (tested:
+  OV5647 / Camera Module v1, e.g. at the eyepiece with a projection
+  adapter)
 
 ## Installation
 
@@ -157,6 +164,44 @@ react to events instead of polling.
 
 Any INDI-aware software (KStars/Ekos, Stellarium, PHD2, ...) can also
 connect to `raspberrypi:7624` directly.
+
+## Camera (optional)
+
+A Raspberry Pi CSI camera pointed through the telescope (prime focus or
+eyepiece projection) can be added with:
+
+```sh
+sudo ./camera-setup.sh
+```
+
+The installer adds the [`indi_pylibcamera`](https://pypi.org/project/indi-pylibcamera/)
+driver to the indiserver (creating the service if this Pi does not run
+the bridge) and installs [MediaMTX](https://github.com/bluenviron/mediamtx)
+for browser live view. Works with any libcamera-supported module; tested
+with the OV5647 (Camera Module v1).
+
+**Capturing with Ekos/KStars.** Connect Ekos to the Pi (port 7624): the
+camera appears as CCD `pylibcamera` next to the `Celestron GPS` mount.
+Frames are downloaded to the PC as FITS (raw sensor data, 16-bit) —
+ready for stacking; JPEG capture and H264 recording are available on the
+Pi with the stock `rpicam-still` / `rpicam-vid` tools.
+
+**Live view (WebRTC, ~0.3 s latency).** Two switchable profiles:
+
+```sh
+sudo camera-mode planetary   # 1296x972 @ 40 fps, auto exposure
+sudo camera-mode deepsky     # 0.9 s exposure, gain 8, 1 fps preview
+sudo camera-mode off         # stop streaming, free the camera for INDI
+sudo camera-mode status
+```
+
+Then open `http://<pi-address>:8889/cam` in any browser on the network.
+Profiles are plain MediaMTX configs in `/etc/mediamtx/` — tune
+resolution, shutter (µs) and gain there.
+
+> **Note:** the camera is a single-consumer device, like the serial
+> port: while MediaMTX streams, the INDI camera driver cannot connect,
+> and vice versa. Run `sudo camera-mode off` before capturing from Ekos.
 
 ## AUX protocol reference
 
